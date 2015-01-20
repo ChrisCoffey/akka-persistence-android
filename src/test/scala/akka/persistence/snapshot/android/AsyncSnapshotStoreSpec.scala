@@ -1,10 +1,10 @@
-package akka.persistence.snapshot.sqlasync
+package akka.persistence.snapshot.android
 
 import akka.actor.{Props, ActorSystem}
 import akka.persistence.SnapshotProtocol.{DeleteSnapshot, DeleteSnapshots, LoadSnapshot, LoadSnapshotResult, SaveSnapshot}
 import akka.persistence._
-import akka.persistence.snapshot.sqlasync.AsyncSnapshotStore.DeleteSnapshotFailure
-import akka.persistence.snapshot.sqlasync.AsyncSnapshotStore.DeleteSnapshotSuccess
+import akka.persistence.snapshot.android.AsyncSnapshotStore.DeleteSnapshotFailure
+import akka.persistence.snapshot.android.AsyncSnapshotStore.DeleteSnapshotSuccess
 import akka.testkit.{TestProbe, ImplicitSender, TestKit}
 import com.typesafe.config.ConfigFactory
 import java.io.IOException

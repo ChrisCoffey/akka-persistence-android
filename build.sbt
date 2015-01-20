@@ -1,12 +1,14 @@
-organization := "com.okumin"
+organization := "me.leaf"
 
-name := "akka-persistence-sql-async"
+name := "akka-persistence-android"
 
 version := "0.1"
 
 scalaVersion := "2.11.5"
 
 crossScalaVersions := Seq("2.10.4", "2.11.5")
+
+scalacOptions ++= Seq("-unchecked", "-feature", "-deprecation")
 
 parallelExecution in Test := false
 
@@ -17,12 +19,14 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka"   %% "akka-actor"                        % akkaVersion,
   "com.typesafe.akka"   %% "akka-persistence-experimental"     % akkaVersion,
   "org.scalikejdbc"     %% "scalikejdbc-async"                 % "0.5.4",
+  "org.scaloid"         %% "scaloid"                           % "3.6.1-10",
   "com.github.mauricio" %% "mysql-async"                       % mauricioVersion % "provided",
   "com.github.mauricio" %% "postgresql-async"                  % mauricioVersion % "provided",
   "com.typesafe.akka"   %% "akka-persistence-tck-experimental" % akkaVersion     % "test",
   "com.typesafe.akka"   %% "akka-slf4j"                        % akkaVersion     % "test",
   "com.typesafe.akka"   %% "akka-testkit"                      % akkaVersion     % "test",
-  "org.slf4j"            % "slf4j-log4j12"                     % "1.7.10"        % "test"
+  "org.slf4j"            % "slf4j-log4j12"                     % "1.7.10"        % "test",
+  "org.robolectric"      % "robolectric"                       % "2.4"           % "test"
 )
 
 publishMavenStyle := true

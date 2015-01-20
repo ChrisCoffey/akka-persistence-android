@@ -1,7 +1,7 @@
 package akka.persistence.helper
 
 import akka.persistence.PluginSpec
-import akka.persistence.common.{ScalikeJDBCExtension, SQLAsyncConfig}
+import akka.persistence.common.{ScalikeJDBCExtension, AndroidSqliteConfig$}
 import com.typesafe.config.{ConfigFactory, Config}
 import scala.concurrent.duration._
 import scala.concurrent.{Future, Await}
@@ -9,7 +9,7 @@ import scalikejdbc.SQL
 import scalikejdbc.async._
 
 trait DatabaseInitializer extends PluginSpec {
-  protected lazy val sqlAsyncConfig: SQLAsyncConfig = ScalikeJDBCExtension(system).config
+  protected lazy val sqlAsyncConfig: AndroidSqliteConfig = ScalikeJDBCExtension(system).config
   private[this] def executeDDL[A](ddl: Seq[String]): Unit = {
     implicit val executor = sqlAsyncConfig.system.dispatcher
     val provider = ScalikeJDBCExtension(sqlAsyncConfig.system).sessionProvider

@@ -1,4 +1,4 @@
-package akka.persistence.snapshot.sqlasync
+package akka.persistence.snapshot.android
 
 import akka.persistence.helper.PostgreSQLInitializer
 import akka.persistence.snapshot.SnapshotStoreSpec
