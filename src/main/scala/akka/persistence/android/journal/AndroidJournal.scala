@@ -1,21 +1,21 @@
-package akka.persistence.journal.android
+package akka.persistence.android.journal
 
 import java.sql.SQLException
 
 import akka.actor.ActorLogging
-import akka.persistence.common.DbHelper
+import akka.persistence.android.common.DbHelper
 import akka.persistence.journal.SyncWriteJournal
-import akka.persistence.journal.android.AndroidJournal._
+import akka.persistence.android.journal.AndroidJournal._
 import akka.persistence.{PersistentConfirmation, PersistentId, PersistentRepr}
 import akka.serialization.{Serialization, SerializationExtension}
 import android.content.ContentValues
-
 import org.scaloid.common._
+
 import scala.collection.immutable
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class AndroidJournal extends SyncWriteJournal with ActorLogging {
+  implicit val ec = context.system.dispatcher
   private val dbHelper = new DbHelper(context.system)
 
   private[this] val serialization: Serialization = SerializationExtension(context.system)

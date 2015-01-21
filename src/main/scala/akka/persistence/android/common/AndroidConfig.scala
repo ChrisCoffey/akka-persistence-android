@@ -1,9 +1,9 @@
-package akka.persistence.common
+package akka.persistence.android.common
 
 import akka.actor.ActorSystem
 
 private[persistence] class AndroidConfig(val system: ActorSystem) {
-  val rootKey = "akka-persistence-android-sqlite"
+  val rootKey = "akka-persistence-android"
   val config = system.settings.config.getConfig(rootKey)
 
   val name = config.getString("name")

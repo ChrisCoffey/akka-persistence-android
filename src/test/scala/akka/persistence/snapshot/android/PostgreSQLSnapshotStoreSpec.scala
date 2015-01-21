@@ -1,6 +1,0 @@
-package akka.persistence.snapshot.android
-
-import akka.persistence.helper.PostgreSQLInitializer
-import akka.persistence.snapshot.SnapshotStoreSpec
-
-class PostgreSQLSnapshotStoreSpec extends SnapshotStoreSpec with PostgreSQLInitializer

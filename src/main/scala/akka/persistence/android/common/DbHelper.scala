@@ -1,4 +1,4 @@
-package akka.persistence.common
+package akka.persistence.android.common
 
 import akka.actor.ActorSystem
 import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}

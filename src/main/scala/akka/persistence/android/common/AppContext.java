@@ -1,4 +1,4 @@
-package akka.persistence.common;
+package akka.persistence.android.common;
 
 import android.app.Application;
 import android.content.Context;

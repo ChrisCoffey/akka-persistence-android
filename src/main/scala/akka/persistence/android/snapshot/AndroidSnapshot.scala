@@ -1,18 +1,18 @@
-package akka.persistence.snapshot.android
+package akka.persistence.android.snapshot
 
+import _root_.android.content.ContentValues
 import akka.actor.ActorLogging
 import akka.persistence._
-import akka.persistence.common.DbHelper
+import akka.persistence.android.common.DbHelper
 import akka.persistence.serialization.Snapshot
 import akka.persistence.snapshot.SnapshotStore
 import akka.serialization.{Serialization, SerializationExtension}
-import android.content.ContentValues
 import org.scaloid.common.RichCursor
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class AndroidSnapshot extends SnapshotStore with ActorLogging {
+  implicit val ec = context.system.dispatcher
   private val dbHelper = new DbHelper(context.system)
 
   private[this] val serialization: Serialization = SerializationExtension(context.system)
