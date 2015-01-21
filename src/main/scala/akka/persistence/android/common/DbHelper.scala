@@ -40,7 +40,7 @@ object DbHelper {
       |CREATE TABLE IF NOT EXISTS ${tables.journal} (
       |  ${columns.persistenceId} VARCHAR(255) NOT NULL,
       |  ${columns.sequenceNumber} INTEGER(8) NOT NULL,
-      |  ${columns.marker} VARCHAR(255) NOT NULL,
+      |  ${columns.marker} CHAR(1) NOT NULL,
       |  ${columns.message} BLOB NOT NULL,
       |  ${columns.createdAt} INTEGER(8) NOT NULL DEFAULT (strftime('%s','now')),
       |  PRIMARY KEY (${columns.persistenceId}, ${columns.sequenceNumber})

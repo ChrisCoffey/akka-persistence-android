@@ -42,11 +42,91 @@ class AndroidJournal extends SyncWriteJournal with ActorLogging {
     }
   }
 
-  @deprecated("writeConfirmations will be removed, since Channels will be removed.", since = "1.0.0")
-  override def writeConfirmations(confirmations: immutable.Seq[PersistentConfirmation]): Unit = ???
+  @deprecated("writeConfirmations will be removed.", since = "2.3.4")
+  override def writeConfirmations(confirmations: immutable.Seq[PersistentConfirmation]): Unit = {
+    log.debug(s"Write confirmations, $confirmations")
 
-  @deprecated("asyncDeleteMessages will be removed.", since = "1.0.0")
-  override def deleteMessages(messageIds: immutable.Seq[PersistentId], permanent: Boolean): Unit = ???
+    def select(persistenceId: String, sequenceNr: Long): Option[PersistentRepr] = {
+      val c = new RichCursor(dbHelper.db.query(
+        DbHelper.tables.journal,
+        Array(DbHelper.columns.marker, DbHelper.columns.message),
+        s"${DbHelper.columns.persistenceId} = ? and ${DbHelper.columns.sequenceNumber} = ?",
+        Array(persistenceId, sequenceNr.toString),
+        null,
+        null,
+        null))
+
+      c.iterator.toList.map(r => (r.getString(0), r.getBlob(1))).map {
+        case (DeletedMarker, message) => None
+        case (_, message) => Some(persistenceFromBytes(message))
+      }.head
+    }
+
+    def update(message: PersistentRepr): Future[Unit] = {
+      //Future {
+        val content = new ContentValues()
+        content.put(DbHelper.columns.message, persistenceToBytes(message))
+
+        dbHelper.db.update(
+          DbHelper.tables.journal,
+          content,
+          s"${DbHelper.columns.persistenceId} = ? and ${DbHelper.columns.sequenceNumber} = ?",
+          Array(message.persistenceId, message.sequenceNr.toString))
+
+      Future.successful(())
+      //}
+    }
+
+    dbHelper.db.beginTransaction()
+    try {
+      confirmations.foldLeft(Future.successful(())) { (result, confirmation) =>
+        result.flatMap { _ =>
+          select(confirmation.persistenceId, confirmation.sequenceNr) match {
+            case Some(message) =>
+              val confirmationIds = message.confirms :+ confirmation.channelId
+              val newMessage = message.update(confirms = confirmationIds)
+              update(newMessage)
+            case None => Future.successful(())
+          }
+        }
+      }
+
+      dbHelper.db.setTransactionSuccessful()
+    } catch {
+      case e: SQLException => log.error(s"Error writing confirmations: $e")
+    } finally {
+      dbHelper.db.endTransaction()
+    }
+  }
+
+  @deprecated("asyncDeleteMessages will be removed.", since = "2.3.4")
+  override def deleteMessages(messageIds: immutable.Seq[PersistentId], permanent: Boolean): Unit = {
+    dbHelper.db.beginTransaction()
+    try {
+      messageIds.foreach { m =>
+        if (permanent) {
+          dbHelper.db.delete(
+            DbHelper.tables.journal,
+            s"${DbHelper.columns.persistenceId} = ? and ${DbHelper.columns.sequenceNumber} = ?",
+            Array(m.persistenceId, m.sequenceNr.toString))
+        } else {
+          val content = new ContentValues()
+          content.put(DbHelper.columns.marker, DeletedMarker)
+          dbHelper.db.update(
+            DbHelper.tables.journal,
+            content,
+            s"${DbHelper.columns.persistenceId} = ? and ${DbHelper.columns.sequenceNumber} = ?",
+            Array(m.persistenceId, m.sequenceNr.toString))
+        }
+      }
+
+      dbHelper.db.setTransactionSuccessful()
+    } catch {
+      case e: SQLException => log.error(s"Error deleting messages: $e")
+    } finally {
+      dbHelper.db.endTransaction()
+    }
+  }
 
   override def deleteMessagesTo(persistenceId: String, toSequenceNr: Long, permanent: Boolean): Unit = {
     log.debug(s"Delete messages, persistenceId = $persistenceId, toSequenceNr = $toSequenceNr")
@@ -93,7 +173,6 @@ class AndroidJournal extends SyncWriteJournal with ActorLogging {
 
   override def asyncReadHighestSequenceNr(persistenceId: String, fromSequenceNr: Long): Future[Long] = {
     log.debug(s"Read the highest sequence number, persistenceId = $persistenceId, fromSequenceNr = $fromSequenceNr")
-
 
     Future {
       val c = new RichCursor(dbHelper.db.query(
