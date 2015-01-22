@@ -14,7 +14,9 @@ class DbHelper(val system: ActorSystem) {
     // onUpgrade in a no-op because there is only only version of the schema
     override def onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int): Unit = {}
 
-    override def onCreate(db: SQLiteDatabase): Unit = db.execSQL(DbHelper.createSchema)
+    override def onCreate(db: SQLiteDatabase): Unit = DbHelper.schema.foreach { s =>
+      db.execSQL(s)
+    }
   }
 }
 
@@ -35,7 +37,7 @@ object DbHelper {
     final val snapshot = "snapshot"
   }
 
-  final val createSchema =
+  final val schema = Array(
     s"""
       |CREATE TABLE IF NOT EXISTS ${tables.journal} (
       |  ${columns.persistenceId} VARCHAR(255) NOT NULL,
@@ -45,7 +47,8 @@ object DbHelper {
       |  ${columns.createdAt} INTEGER(8) NOT NULL DEFAULT (strftime('%s','now')),
       |  PRIMARY KEY (${columns.persistenceId}, ${columns.sequenceNumber})
       |);
-      |
+    """.stripMargin,
+    s"""
       |CREATE TABLE IF NOT EXISTS ${tables.snapshot} (
       |  ${columns.persistenceId} VARCHAR(255) NOT NULL,
       |  ${columns.sequenceNumber} INTEGER(8) NOT NULL,
@@ -54,4 +57,5 @@ object DbHelper {
       |  PRIMARY KEY (${columns.persistenceId}, ${columns.sequenceNumber})
       |);
     """.stripMargin
+  )
 }

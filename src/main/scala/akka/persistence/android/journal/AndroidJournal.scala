@@ -5,7 +5,6 @@ import java.sql.SQLException
 import akka.actor.ActorLogging
 import akka.persistence.android.common.DbHelper
 import akka.persistence.journal.SyncWriteJournal
-import akka.persistence.android.journal.AndroidJournal._
 import akka.persistence.{PersistentConfirmation, PersistentId, PersistentRepr}
 import akka.serialization.{Serialization, SerializationExtension}
 import android.content.ContentValues
@@ -29,7 +28,7 @@ class AndroidJournal extends SyncWriteJournal with ActorLogging {
         val content = new ContentValues()
         content.put(DbHelper.columns.persistenceId, m.persistenceId)
         content.put(DbHelper.columns.sequenceNumber, m.sequenceNr.asInstanceOf[java.lang.Long])
-        content.put(DbHelper.columns.marker, AcceptedMarker)
+        content.put(DbHelper.columns.marker, AndroidJournal.AcceptedMarker)
         content.put(DbHelper.columns.message, persistenceToBytes(m))
 
         dbHelper.db.insertOrThrow(DbHelper.tables.journal, null, content)
@@ -57,7 +56,7 @@ class AndroidJournal extends SyncWriteJournal with ActorLogging {
         null))
 
       c.iterator.toList.map(r => (r.getString(0), r.getBlob(1))).map {
-        case (DeletedMarker, message) => None
+        case (AndroidJournal.DeletedMarker, message) => None
         case (_, message) => Some(persistenceFromBytes(message))
       }.head
     }
@@ -111,7 +110,7 @@ class AndroidJournal extends SyncWriteJournal with ActorLogging {
             Array(m.persistenceId, m.sequenceNr.toString))
         } else {
           val content = new ContentValues()
-          content.put(DbHelper.columns.marker, DeletedMarker)
+          content.put(DbHelper.columns.marker, AndroidJournal.DeletedMarker)
           dbHelper.db.update(
             DbHelper.tables.journal,
             content,
@@ -138,12 +137,12 @@ class AndroidJournal extends SyncWriteJournal with ActorLogging {
         Array(persistenceId, toSequenceNr.toString))
     } else {
       val content = new ContentValues()
-      content.put(DbHelper.columns.marker, DeletedMarker)
+      content.put(DbHelper.columns.marker, AndroidJournal.DeletedMarker)
       dbHelper.db.update(
         DbHelper.tables.journal,
         content,
         s"${DbHelper.columns.persistenceId} = ? and ${DbHelper.columns.sequenceNumber} <= ? and ${DbHelper.columns.marker} != ?",
-        Array(persistenceId, toSequenceNr.toString, DeletedMarker))
+        Array(persistenceId, toSequenceNr.toString, AndroidJournal.DeletedMarker))
     }
   }
 
@@ -165,7 +164,7 @@ class AndroidJournal extends SyncWriteJournal with ActorLogging {
         case (marker, bytes) =>
           val raw = persistenceFromBytes(bytes)
           // It is possible that marker is incompatible with message, for batch updates.
-          val message = if (marker == DeletedMarker) raw.update(deleted = true) else raw
+          val message = if (marker == AndroidJournal.DeletedMarker) raw.update(deleted = true) else raw
           replayCallback(message)
       }
     }
