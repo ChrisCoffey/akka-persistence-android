@@ -58,35 +58,29 @@ class AndroidJournal extends SyncWriteJournal with ActorLogging {
       c.iterator.toList.map(r => (r.getString(0), r.getBlob(1))).map {
         case (AndroidJournal.DeletedMarker, message) => None
         case (_, message) => Some(persistenceFromBytes(message))
-      }.head
-    }
+      }
+    }.headOption.getOrElse(None)
 
-    def update(message: PersistentRepr): Future[Unit] = {
-      //Future {
-        val content = new ContentValues()
-        content.put(DbHelper.columns.message, persistenceToBytes(message))
+    def update(message: PersistentRepr): Unit = {
+      val content = new ContentValues()
+      content.put(DbHelper.columns.message, persistenceToBytes(message))
 
-        dbHelper.db.update(
-          DbHelper.tables.journal,
-          content,
-          s"${DbHelper.columns.persistenceId} = ? and ${DbHelper.columns.sequenceNumber} = ?",
-          Array(message.persistenceId, message.sequenceNr.toString))
-
-      Future.successful(())
-      //}
+      dbHelper.db.update(
+        DbHelper.tables.journal,
+        content,
+        s"${DbHelper.columns.persistenceId} = ? and ${DbHelper.columns.sequenceNumber} = ?",
+        Array(message.persistenceId, message.sequenceNr.toString))
     }
 
     dbHelper.db.beginTransaction()
     try {
-      confirmations.foldLeft(Future.successful(())) { (result, confirmation) =>
-        result.flatMap { _ =>
-          select(confirmation.persistenceId, confirmation.sequenceNr) match {
-            case Some(message) =>
-              val confirmationIds = message.confirms :+ confirmation.channelId
-              val newMessage = message.update(confirms = confirmationIds)
-              update(newMessage)
-            case None => Future.successful(())
-          }
+      confirmations.foreach { c =>
+        select(c.persistenceId, c.sequenceNr) match {
+          case Some(message) =>
+            val confirmationIds = message.confirms :+ c.channelId
+            val newMessage = message.update(confirms = confirmationIds)
+            update(newMessage)
+          case None =>
         }
       }
 
@@ -98,7 +92,7 @@ class AndroidJournal extends SyncWriteJournal with ActorLogging {
     }
   }
 
-  @deprecated("asyncDeleteMessages will be removed.", since = "2.3.4")
+  @deprecated("deleteMessages will be removed.", since = "2.3.4")
   override def deleteMessages(messageIds: immutable.Seq[PersistentId], permanent: Boolean): Unit = {
     dbHelper.db.beginTransaction()
     try {
