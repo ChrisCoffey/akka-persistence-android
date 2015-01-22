@@ -1,16 +1,8 @@
-# akka-persistence-sql-async
+# akka-persistence-android
 
-[![Build Status](https://travis-ci.org/okumin/akka-persistence-sql-async.svg?branch=master)](https://travis-ci.org/okumin/akka-persistence-sql-async)
+A journal and snapshot store plugin for [akka-persistence](http://doc.akka.io/docs/akka/2.3.8/scala/persistence.html) using Android's built in SQLite database.
 
-A journal and snapshot store plugin for [akka-persistence](http://doc.akka.io/docs/akka/2.3.6/scala/persistence.html) using RDBMS.
-Akka-persistence-sql-async executes queries by [ScalikeJDBC-Async](https://github.com/scalikejdbc/scalikejdbc-async) that provides non-blocking APIs to talk to databases.
-
-
-Akka-persistence-sql-async supports following databases.
-- MySQL
-- PostgreSQL
-
-This library is tested against [akka-persistence-tck](http://doc.akka.io/docs/akka/2.3.6/scala/persistence.html#plugin-tck).
+This library is tested against [akka-persistence-tck](http://doc.akka.io/docs/akka/2.3.8/scala/persistence.html#plugin-tck).
 
 ## Usage
 
@@ -19,19 +11,7 @@ This library is tested against [akka-persistence-tck](http://doc.akka.io/docs/ak
 You should add the following dependency.
 
 ```
-libraryDependencies += "com.okumin" %% "akka-persistence-sql-async" % "0.1"
-```
-
-And then, please include the mysql-async if you use MySQL.
-
-```
-libraryDependencies += "com.github.mauricio" %% "mysql-async" % "0.2.15"
-```
-
-And if you use PostgreSQL.
-
-```
-libraryDependencies += "com.github.mauricio" %% "postgresql-async" % "0.2.15"
+libraryDependencies += "me.leaf" %% "akka-persistence-android" % "0.1"
 ```
 
 ### Configuration
@@ -41,81 +21,53 @@ In `application.conf`,
 ```
 akka {
   persistence {
-    journal.plugin = "akka-persistence-sql-async.journal"
-    snapshot-store.plugin = "akka-persistence-sql-async.snapshot-store"
+    journal.plugin = "akka-persistence-android.journal"
+    snapshot-store.plugin = "akka-persistence-android.snapshot"
   }
 }
 
-akka-persistence-sql-async {
-  journal.class = "akka.persistence.journal.sqlasync.MySQLAsyncWriteJournal"
-  snapshot-store.class = "akka.persistence.snapshot.sqlasync.MySQLSnapshotStore"
-  
-  # For PostgreSQL
-  # journal.class = "akka.persistence.journal.sqlasync.PostgreSQLAsyncWriteJournal"
-  # snapshot-store.class = "akka.persistence.snapshot.sqlasync.PostgreSQLSnapshotStore"
+akka-persistence-android {
+  journal.class = "akka.persistence.android.journal.AndroidJournal"
+  snapshot.class = "akka.persistence.android.snapshot.AndroidSnapshot"
 
-  user = "root"
-  pass = ""
-  url = "jdbc:mysql://localhost/akka_persistence_sql_async"
-  max-pool-size = 4 # total connection count
-  wait-queue-capacity = 10000 # If query cannot be executed soon, it wait in the queue and will be executed later.
-  journal-table-name = "journal"
-  snapshot-table-name = "snapshot"
+  name = "my-db-name"
 }
 ```
 
 ## Table schema
 
-Create the database and tables for journal and snapshot store.
+The table schema is created automatically by DbHelper using Android's SQLiteOpenHelper.
 
-### MySQL
+## Testing
 
-```
-CREATE TABLE IF NOT EXISTS {your_journal_table_name} (
-  persistence_id VARCHAR(255) NOT NULL,
-  sequence_nr BIGINT NOT NULL,
-  marker VARCHAR(255) NOT NULL,
-  message BLOB NOT NULL,
-  created_at TIMESTAMP NOT NULL,
-  PRIMARY KEY (persistence_id, sequence_nr)
-);
+Testing is enable via the [RoboTest](https://github.com/zbsz/robotest) Scala wrapper for [Robolectric](http://robolectric.org).
 
-CREATE TABLE IF NOT EXISTS {your_snapshot_table_name} (
-  persistence_id VARCHAR(255) NOT NULL,
-  sequence_nr BIGINT NOT NULL,
-  created_at BIGINT NOT NULL,
-  snapshot BLOB NOT NULL,
-  PRIMARY KEY (persistence_id, sequence_nr)
-);
-```
-
-### PostgreSQL
+Robolectric requires the Google APIs for Android (specifically the maps JAR) and and the Android support-v4 library to be in your local Maven repository.
+To install these, first download them via the Android SDK tools, and then run the following:
 
 ```
-CREATE TABLE IF NOT EXISTS {your_journal_table_name} (
-  persistence_id VARCHAR(255) NOT NULL,
-  sequence_nr BIGINT NOT NULL,
-  marker VARCHAR(255) NOT NULL,
-  message BYTEA NOT NULL,
-  created_at TIMESTAMP NOT NULL,
-  PRIMARY KEY (persistence_id, sequence_nr)
-);
+mvn install:install-file -DgroupId=com.google.android.maps \
+  -DartifactId=maps \
+  -Dversion=18_r3 \
+  -Dpackaging=jar \
+  -Dfile="$ANDROID_HOME/add-ons/addon-google_apis-google-18/libs/maps.jar"
 
-
-CREATE TABLE IF NOT EXISTS {your_snapshot_table_name} (
-  persistence_id VARCHAR(255) NOT NULL,
-  sequence_nr BIGINT NOT NULL,
-  created_at BIGINT NOT NULL,
-  snapshot BYTEA NOT NULL,
-  PRIMARY KEY (persistence_id, sequence_nr)
-);
+mvn install:install-file -DgroupId=com.android.support \
+  -DartifactId=support-v4 \
+  -Dversion=19.0.1 \
+  -Dpackaging=jar \
+  -Dfile="$ANDROID_HOME/extras/android/support/v4/android-support-v4.jar"
 ```
 
 ## Release Notes
 
-### 0.1 - Sep 30, 2014
+### 0.1 - Jan 22, 2015
 - The first release
 
 ## License
 
-Apache 2.0
+[Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
+## References
+
+This project is descended from [okumin](https://github.com/okumin)'s [akka-persistence-sql-async](https://github.com/okumin/akka-persistence-sql-async) project.
