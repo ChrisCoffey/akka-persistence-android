@@ -3,6 +3,7 @@
           package="akka_persistence_android"
           android:versionCode="1"
           android:versionName="1.0">
+    <!-- robolectric uses these versions to determine its compatibility. it currently only supports <= 18 -->
     <uses-sdk android:minSdkVersion="18" android:targetSdkVersion="18" />
     <application android:name="akka.persistence.android.common.AppContext" />
 </manifest>

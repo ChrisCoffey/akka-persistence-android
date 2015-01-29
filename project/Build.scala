@@ -33,7 +33,8 @@ object Build extends android.AutoBuild {
   )
 
   val repos = Seq(
-    "RoboTest releases" at "https://raw.github.com/zbsz/mvn-repo/master/releases/"
+    "RoboTest Releases" at "https://raw.github.com/zbsz/mvn-repo/master/releases/",
+    "Leaf 3rd Party" at "http://repo.leafcorp.me/content/repositories/thirdparty/"
   )
 
   val akkaVersion = "2.3.8"

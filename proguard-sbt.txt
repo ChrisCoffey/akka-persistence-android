@@ -111,5 +111,5 @@
  scala.concurrent.forkjoin.LinkedTransferQueue$PaddedAtomicReference tail;
  scala.concurrent.forkjoin.LinkedTransferQueue$PaddedAtomicReference cleanMe;
 }
-# view AndroidManifest.xml #generated:7
+# view AndroidManifest.xml #generated:8
 -keep class akka.persistence.android.common.AppContext { <init>(...); }
