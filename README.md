@@ -1,6 +1,7 @@
 # akka-persistence-android
 
-A journal and snapshot store plugin for [akka-persistence](http://doc.akka.io/docs/akka/2.3.8/scala/persistence.html) using Android's built in SQLite database.
+A journal and snapshot store plugin for [akka-persistence](http://doc.akka.io/docs/akka/2.3.8/scala/persistence.html)
+using Android's built in SQLite database.
 
 This library is tested against [akka-persistence-tck](http://doc.akka.io/docs/akka/2.3.8/scala/persistence.html#plugin-tck).
 
@@ -11,12 +12,20 @@ This library is tested against [akka-persistence-tck](http://doc.akka.io/docs/ak
 You should add the following dependency.
 
 ```
-libraryDependencies += "me.leaf" %% "akka-persistence-android" % "0.1"
+libraryDependencies += "me.leaf" %% "akka-persistence-android" % "0.2"
 ```
 
 ### Configuration
 
-In `application.conf`,
+The journal and snapshot plugins are configured as normal. There are two additional configuration items that need to be
+set `name` and `context-lookup.class`.
+
+`name` is the name of the SQLite DB on the Android filesystem.
+
+`context-lookup.class` is an implementation of the [ContextLookup](https://github.com/leafme/akka-persistence-android/blob/master/src/main/scala/akka/persistence/android/common/ContextLookup.scala)
+trait. A simple implementation (used by the unit tests) is included in [SimpleContextLookup](https://github.com/leafme/akka-persistence-android/blob/master/src/main/scala/akka/persistence/android/common/SimpleContextLookup.scala).
+
+Example `application.conf`:
 
 ```
 akka {
@@ -29,6 +38,7 @@ akka {
 akka-persistence-android {
   journal.class = "akka.persistence.android.journal.AndroidJournal"
   snapshot.class = "akka.persistence.android.snapshot.AndroidSnapshot"
+  context-lookup.class = "akka.persistence.android.common.SimpleContextLookup"
 
   name = "my-db-name"
 }
@@ -42,7 +52,9 @@ The table schema is created automatically by DbHelper using Android's SQLiteOpen
 
 Testing is enable via the [RoboTest](https://github.com/zbsz/robotest) Scala wrapper for [Robolectric](http://robolectric.org).
 
-Robolectric requires the Google APIs for Android (specifically the maps JAR) and and the Android support-v4 library to be in your local Maven repository.
+Robolectric requires the Google APIs for Android (specifically the maps JAR) and and the Android support-v4 library to
+be in your local Maven repository.
+
 To install these, first download them via the Android SDK tools, and then run the following:
 
 ```
@@ -61,8 +73,11 @@ mvn install:install-file -DgroupId=com.android.support \
 
 ## Release Notes
 
-### 0.1 - Jan 22, 2015
+### 0.1 - 2015-01-22
 - The first release
+
+### 0.2 - 2015-02-03
+- Add ContextLookup to get the context from the Android world into the Akka world
 
 ## License
 
