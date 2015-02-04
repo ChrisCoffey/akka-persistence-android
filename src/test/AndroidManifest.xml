@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="akka.persistence.android">
+    <!-- robolectric uses these versions to determine its compatibility. it currently only supports <= 18 -->
+    <uses-sdk android:minSdkVersion="18" android:targetSdkVersion="18" />
+    <application android:name=".AppContext" />
+</manifest>

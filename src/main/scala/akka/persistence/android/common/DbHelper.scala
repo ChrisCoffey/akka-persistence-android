@@ -2,15 +2,27 @@ package akka.persistence.android.common
 
 import akka.actor.ActorSystem
 import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
+import scala.reflect.runtime.universe
 
 class DbHelper(val system: ActorSystem) {
 
   val config = AndroidConfig(system)
-  def context = AppContext.getAppContext
   lazy val db = dbHelper.getWritableDatabase
 
-  private lazy val dbHelper = new SQLiteOpenHelper(context, config.name, null, DbHelper.version) {
+  // load the specified class via Java. using Scala reflection will fail because Scala reflection is dependent on
+  // java.rmi which doesn't exist on Android
+  val lookup = getClass.getClassLoader.loadClass(config.contextLookupClass).newInstance()
 
+  if (!lookup.isInstanceOf[ContextLookup]) {
+    throw new IllegalArgumentException(config.contextLookupClass + " must extend the trait akka.persistence.android.common.ContextLookup")
+  }
+
+  val context = lookup.asInstanceOf[ContextLookup].getContext
+  if (context == null) {
+    throw new IllegalArgumentException("the Android context provided by " + config.contextLookupClass + " was null")
+  }
+
+  private lazy val dbHelper = new SQLiteOpenHelper(context, config.name, null, DbHelper.version) {
     // onUpgrade in a no-op because there is only only version of the schema
     override def onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int): Unit = {}
 

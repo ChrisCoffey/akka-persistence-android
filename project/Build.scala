@@ -1,7 +1,7 @@
 import sbt._
 import sbt.Keys._
 
-object Build extends android.AutoBuild {
+object AkkaPersistenceAndroidBuild extends Build {//extends android.AutoBuild {
 
   lazy val akka_persistence_android = Project (
     "akka-persistence-android",
@@ -44,7 +44,7 @@ object Build extends android.AutoBuild {
     "com.typesafe.akka"     %% "akka-persistence-experimental"      % akkaVersion,
     "org.scaloid"           %% "scaloid"                            % "3.6.1-10",
     "org.robolectric"        % "android-all"                        % "5.0.0_r2-robolectric-0"    % "provided", // android version used by Robolectric 2.4
-    "com.android.support"    % "support-v4"                         % "19.0.1",
+    "com.android.support"    % "support-v4"                         % "19.0.1"                    % "provided",
     "com.geteit"            %% "robotest"                           % "0.7"                       % "test",     // latest RoboTest version
     "junit"                  % "junit"                              % "4.8.2"                     % "test",     // needed to run Roboelectric
     "com.typesafe.akka"     %% "akka-persistence-tck-experimental"  % akkaVersion                 % "test",
