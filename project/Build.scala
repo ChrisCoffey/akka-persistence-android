@@ -1,7 +1,10 @@
+import com.typesafe.sbt.pgp.PgpKeys
 import sbt._
 import sbt.Keys._
+import sbtrelease.ReleasePlugin._
+import ReleaseKeys._
 
-object AkkaPersistenceAndroidBuild extends Build {//extends android.AutoBuild {
+object AkkaPersistenceAndroidBuild extends Build {
 
   lazy val akka_persistence_android = Project (
     "akka-persistence-android",
@@ -12,11 +15,9 @@ object AkkaPersistenceAndroidBuild extends Build {//extends android.AutoBuild {
     )
   )
 
-  import ReleaseRepositories._
-
   val buildSettings = Seq(
     organization := "me.leaf",
-    scalaVersion := "2.11.4",
+    scalaVersion := "2.11.5",
     scalacOptions ++= Seq(
       "-unchecked",
       "-feature",
@@ -28,8 +29,33 @@ object AkkaPersistenceAndroidBuild extends Build {//extends android.AutoBuild {
     ),
     parallelExecution in Test := false,
     fork in Test := true,
-    credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
-    publishTo := Some(if (isSnapshot.value) leafSnapshots else leafReleases)
+    credentials += Credentials(Path.userHome / ".ivy2" / ".nexus-credentials"),
+    publishTo := {
+      val nexus = "https://oss.sonatype.org/"
+      if (isSnapshot.value)
+        Some("snapshots" at nexus + "content/repositories/snapshots")
+      else
+        Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+    },
+    publishMavenStyle := true,
+    publishArtifact in Test := false,
+    pomIncludeRepository := { _ => false },
+    licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.txt")),
+    homepage := Some(url("https://github.com/leafme/akka-persistence-android")),
+    pomExtra :=
+      <scm>
+        <url>git@github.com:leafme/akka-persistence-android.git</url>
+        <developerConnection>scm:git:git@github.com:leafme/akka-persistence-android.git</developerConnection>
+        <connection>scm:git:git@github.com:leafme/akka-persistence-android.git</connection>
+      </scm>
+      <developers>
+        <developer>
+          <name>Mike Roberts</name>
+          <email>mroberts@leaf.me</email>
+          <organization>Leaf</organization>
+          <organizationUrl>http://www.leaf.me</organizationUrl>
+        </developer>
+      </developers>
   )
 
   val repos = Seq(
@@ -61,7 +87,8 @@ object AkkaPersistenceAndroidBuild extends Build {//extends android.AutoBuild {
 
     releaseSettings ++ Seq(
       versionBump := Version.Bump.Minor,
-      versionFile := file("project/version.sbt")
+      versionFile := file("project/version.sbt"),
+      publishArtifactsAction := PgpKeys.publishSigned.value
     )
   }
 }
