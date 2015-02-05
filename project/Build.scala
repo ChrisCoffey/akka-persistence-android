@@ -2,7 +2,6 @@ import com.typesafe.sbt.pgp.PgpKeys
 import sbt._
 import sbt.Keys._
 import sbtrelease.ReleasePlugin._
-import ReleaseKeys._
 
 object AkkaPersistenceAndroidBuild extends Build {
 
@@ -16,6 +15,7 @@ object AkkaPersistenceAndroidBuild extends Build {
   )
 
   val buildSettings = Seq(
+    version := (version in ThisBuild).value,
     organization := "me.leaf",
     scalaVersion := "2.11.5",
     scalacOptions ++= Seq(
@@ -88,7 +88,8 @@ object AkkaPersistenceAndroidBuild extends Build {
     releaseSettings ++ Seq(
       versionBump := Version.Bump.Minor,
       versionFile := file("project/version.sbt"),
-      publishArtifactsAction := PgpKeys.publishSigned.value
+      publishArtifactsAction := PgpKeys.publishSigned.value,
+      useGlobalVersion := false
     )
   }
 }
