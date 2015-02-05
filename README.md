@@ -12,7 +12,7 @@ This library is tested against [akka-persistence-tck](http://doc.akka.io/docs/ak
 You should add the following dependency.
 
 ```
-libraryDependencies += "me.leaf" %% "akka-persistence-android" % "0.3"
+libraryDependencies += "me.leaf" %% "akka-persistence-android" % "0.4"
 ```
 
 ### Configuration
