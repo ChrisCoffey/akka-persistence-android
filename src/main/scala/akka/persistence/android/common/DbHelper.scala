@@ -17,11 +17,12 @@ class DbHelper(val system: ActorSystem) {
     throw new IllegalArgumentException(config.contextLookupClass + " must extend the trait akka.persistence.android.common.ContextLookup")
   }
 
-  val context = lookup.asInstanceOf[ContextLookup].getContext
-  if (context == null) {
-    throw new IllegalArgumentException("the Android context provided by " + config.contextLookupClass + " was null")
+  val context = lookup.asInstanceOf[ContextLookup].getContext match {
+    case Some(c) => c
+    case None => throw new IllegalArgumentException("the Android context provided by " + config.contextLookupClass + " was null")
   }
 
+  // scalastyle:off null - Android SDK uses null here
   private lazy val dbHelper = new SQLiteOpenHelper(context, config.name, null, DbHelper.version) {
     // onUpgrade in a no-op because there is only only version of the schema
     override def onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int): Unit = {}
@@ -30,17 +31,18 @@ class DbHelper(val system: ActorSystem) {
       db.execSQL(s)
     }
   }
+  // scalastyle:on null
 }
 
 object DbHelper {
   final val version = 1
 
-  object tables {
+  object Tables {
     final val journal = "journal"
     final val snapshot = "snapshot"
   }
 
-  object columns {
+  object Columns {
     final val persistenceId = "persistence_id"
     final val sequenceNumber = "sequence_nr"
     final val marker = "marker"
@@ -51,22 +53,22 @@ object DbHelper {
 
   final val schema = Array(
     s"""
-      |CREATE TABLE IF NOT EXISTS ${tables.journal} (
-      |  ${columns.persistenceId} VARCHAR(255) NOT NULL,
-      |  ${columns.sequenceNumber} INTEGER(8) NOT NULL,
-      |  ${columns.marker} CHAR(1) NOT NULL,
-      |  ${columns.message} BLOB NOT NULL,
-      |  ${columns.createdAt} INTEGER(8) NOT NULL DEFAULT (strftime('%s','now')),
-      |  PRIMARY KEY (${columns.persistenceId}, ${columns.sequenceNumber})
+      |CREATE TABLE IF NOT EXISTS ${Tables.journal} (
+      |  ${Columns.persistenceId} VARCHAR(255) NOT NULL,
+      |  ${Columns.sequenceNumber} INTEGER(8) NOT NULL,
+      |  ${Columns.marker} CHAR(1) NOT NULL,
+      |  ${Columns.message} BLOB NOT NULL,
+      |  ${Columns.createdAt} INTEGER(8) NOT NULL DEFAULT (strftime('%s','now')),
+      |  PRIMARY KEY (${Columns.persistenceId}, ${Columns.sequenceNumber})
       |);
     """.stripMargin,
     s"""
-      |CREATE TABLE IF NOT EXISTS ${tables.snapshot} (
-      |  ${columns.persistenceId} VARCHAR(255) NOT NULL,
-      |  ${columns.sequenceNumber} INTEGER(8) NOT NULL,
-      |  ${columns.createdAt} INTEGER(8) NOT NULL DEFAULT (strftime('%s','now')),
-      |  ${columns.snapshot} BLOB NOT NULL,
-      |  PRIMARY KEY (${columns.persistenceId}, ${columns.sequenceNumber})
+      |CREATE TABLE IF NOT EXISTS ${Tables.snapshot} (
+      |  ${Columns.persistenceId} VARCHAR(255) NOT NULL,
+      |  ${Columns.sequenceNumber} INTEGER(8) NOT NULL,
+      |  ${Columns.createdAt} INTEGER(8) NOT NULL DEFAULT (strftime('%s','now')),
+      |  ${Columns.snapshot} BLOB NOT NULL,
+      |  PRIMARY KEY (${Columns.persistenceId}, ${Columns.sequenceNumber})
       |);
     """.stripMargin
   )

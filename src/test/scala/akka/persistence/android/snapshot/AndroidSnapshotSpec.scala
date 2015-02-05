@@ -12,3 +12,4 @@ class AndroidSnapshotSpec extends SnapshotStoreSpec with RobolectricSuite {
   (new SimpleContextLookup).setContext(AppContext.context)
   lazy val config = ConfigFactory.load("application.conf")
 }
+

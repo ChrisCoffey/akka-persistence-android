@@ -21,16 +21,18 @@ class AndroidSnapshot extends SnapshotStore with ActorLogging {
     log.debug(s"Load a snapshot, persistenceId = $persistenceId, criteria = $criteria")
 
     Future {
+      // scalastyle:off null - Android SDK uses null here
       val c = new RichCursor(dbHelper.db.query(
-        DbHelper.tables.snapshot,
-        Array(DbHelper.columns.snapshot, DbHelper.columns.persistenceId, DbHelper.columns.sequenceNumber, DbHelper.columns.createdAt),
-        s"${DbHelper.columns.persistenceId} = ? and ${DbHelper.columns.sequenceNumber} <= ? and ${DbHelper.columns.createdAt} <= ?",
+        DbHelper.Tables.snapshot,
+        Array(DbHelper.Columns.snapshot, DbHelper.Columns.persistenceId, DbHelper.Columns.sequenceNumber, DbHelper.Columns.createdAt),
+        s"${DbHelper.Columns.persistenceId} = ? and ${DbHelper.Columns.sequenceNumber} <= ? and ${DbHelper.Columns.createdAt} <= ?",
         Array(persistenceId, criteria.maxSequenceNr.toString, criteria.maxTimestamp.toString),
         null,
         null,
-        s"${DbHelper.columns.sequenceNumber} DESC",
+        s"${DbHelper.Columns.sequenceNumber} DESC",
         1.toString
       ))
+      // scalastyle:on null
 
       c.iterator.toList.map(r => (r.getBlob(0), r.getString(1), r.getLong(2), r.getLong(3))).map {
         case (ss, id, seq, created) =>
@@ -48,12 +50,14 @@ class AndroidSnapshot extends SnapshotStore with ActorLogging {
 
     Future {
       val content = new ContentValues()
-      content.put(DbHelper.columns.persistenceId, metadata.persistenceId)
-      content.put(DbHelper.columns.sequenceNumber, metadata.sequenceNr.asInstanceOf[java.lang.Long])
-      content.put(DbHelper.columns.createdAt, metadata.timestamp.asInstanceOf[java.lang.Long])
-      content.put(DbHelper.columns.snapshot, serialization.serialize(Snapshot(snapshot)).get)
+      content.put(DbHelper.Columns.persistenceId, metadata.persistenceId)
+      content.put(DbHelper.Columns.sequenceNumber, metadata.sequenceNr.asInstanceOf[java.lang.Long])
+      content.put(DbHelper.Columns.createdAt, metadata.timestamp.asInstanceOf[java.lang.Long])
+      content.put(DbHelper.Columns.snapshot, serialization.serialize(Snapshot(snapshot)).get)
 
-      dbHelper.db.insert(DbHelper.tables.snapshot, null, content)
+      // scalastyle:off null - Android SDK uses null here
+      dbHelper.db.insert(DbHelper.Tables.snapshot, null, content)
+      // scalastyle:on null
     }
   }
 
@@ -65,8 +69,8 @@ class AndroidSnapshot extends SnapshotStore with ActorLogging {
     log.debug(s"Delete the snapshot, $metadata")
 
     dbHelper.db.delete(
-      DbHelper.tables.snapshot,
-      s"${DbHelper.columns.persistenceId} = ? and ${DbHelper.columns.sequenceNumber} = ?",
+      DbHelper.Tables.snapshot,
+      s"${DbHelper.Columns.persistenceId} = ? and ${DbHelper.Columns.sequenceNumber} = ?",
       Array(metadata.persistenceId, metadata.sequenceNr.toString)
     )
   }
@@ -75,8 +79,8 @@ class AndroidSnapshot extends SnapshotStore with ActorLogging {
     log.debug(s"Delete the snapshot for $persistenceId, criteria = $criteria")
 
     dbHelper.db.delete(
-      DbHelper.tables.snapshot,
-      s"${DbHelper.columns.persistenceId} = ? and ${DbHelper.columns.sequenceNumber} <= ? and ${DbHelper.columns.createdAt} <= ?",
+      DbHelper.Tables.snapshot,
+      s"${DbHelper.Columns.persistenceId} = ? and ${DbHelper.Columns.sequenceNumber} <= ? and ${DbHelper.Columns.createdAt} <= ?",
       Array(persistenceId, criteria.maxSequenceNr.toString, criteria.maxTimestamp.toString)
     )
   }

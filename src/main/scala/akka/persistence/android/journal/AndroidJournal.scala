@@ -26,12 +26,14 @@ class AndroidJournal extends SyncWriteJournal with ActorLogging {
     try {
       messages.foreach { m =>
         val content = new ContentValues()
-        content.put(DbHelper.columns.persistenceId, m.persistenceId)
-        content.put(DbHelper.columns.sequenceNumber, m.sequenceNr.asInstanceOf[java.lang.Long])
-        content.put(DbHelper.columns.marker, AndroidJournal.AcceptedMarker)
-        content.put(DbHelper.columns.message, persistenceToBytes(m))
+        content.put(DbHelper.Columns.persistenceId, m.persistenceId)
+        content.put(DbHelper.Columns.sequenceNumber, m.sequenceNr.asInstanceOf[java.lang.Long])
+        content.put(DbHelper.Columns.marker, AndroidJournal.AcceptedMarker)
+        content.put(DbHelper.Columns.message, persistenceToBytes(m))
 
-        dbHelper.db.insertOrThrow(DbHelper.tables.journal, null, content)
+        // scalastyle:off null - Android SDK uses null here
+        dbHelper.db.insertOrThrow(DbHelper.Tables.journal, null, content)
+        // scalastyle:on null
       }
       dbHelper.db.setTransactionSuccessful()
     } catch {
@@ -46,14 +48,16 @@ class AndroidJournal extends SyncWriteJournal with ActorLogging {
     log.debug(s"Write confirmations, $confirmations")
 
     def select(persistenceId: String, sequenceNr: Long): Option[PersistentRepr] = {
+      // scalastyle:off null - Android SDK uses null here
       val c = new RichCursor(dbHelper.db.query(
-        DbHelper.tables.journal,
-        Array(DbHelper.columns.marker, DbHelper.columns.message),
-        s"${DbHelper.columns.persistenceId} = ? and ${DbHelper.columns.sequenceNumber} = ?",
+        DbHelper.Tables.journal,
+        Array(DbHelper.Columns.marker, DbHelper.Columns.message),
+        s"${DbHelper.Columns.persistenceId} = ? and ${DbHelper.Columns.sequenceNumber} = ?",
         Array(persistenceId, sequenceNr.toString),
         null,
         null,
         null))
+      // scalastyle:on null
 
       c.iterator.toList.map(r => (r.getString(0), r.getBlob(1))).map {
         case (AndroidJournal.DeletedMarker, message) => None
@@ -63,12 +67,12 @@ class AndroidJournal extends SyncWriteJournal with ActorLogging {
 
     def update(message: PersistentRepr): Unit = {
       val content = new ContentValues()
-      content.put(DbHelper.columns.message, persistenceToBytes(message))
+      content.put(DbHelper.Columns.message, persistenceToBytes(message))
 
       dbHelper.db.update(
-        DbHelper.tables.journal,
+        DbHelper.Tables.journal,
         content,
-        s"${DbHelper.columns.persistenceId} = ? and ${DbHelper.columns.sequenceNumber} = ?",
+        s"${DbHelper.Columns.persistenceId} = ? and ${DbHelper.Columns.sequenceNumber} = ?",
         Array(message.persistenceId, message.sequenceNr.toString))
     }
 
@@ -99,16 +103,16 @@ class AndroidJournal extends SyncWriteJournal with ActorLogging {
       messageIds.foreach { m =>
         if (permanent) {
           dbHelper.db.delete(
-            DbHelper.tables.journal,
-            s"${DbHelper.columns.persistenceId} = ? and ${DbHelper.columns.sequenceNumber} = ?",
+            DbHelper.Tables.journal,
+            s"${DbHelper.Columns.persistenceId} = ? and ${DbHelper.Columns.sequenceNumber} = ?",
             Array(m.persistenceId, m.sequenceNr.toString))
         } else {
           val content = new ContentValues()
-          content.put(DbHelper.columns.marker, AndroidJournal.DeletedMarker)
+          content.put(DbHelper.Columns.marker, AndroidJournal.DeletedMarker)
           dbHelper.db.update(
-            DbHelper.tables.journal,
+            DbHelper.Tables.journal,
             content,
-            s"${DbHelper.columns.persistenceId} = ? and ${DbHelper.columns.sequenceNumber} = ?",
+            s"${DbHelper.Columns.persistenceId} = ? and ${DbHelper.Columns.sequenceNumber} = ?",
             Array(m.persistenceId, m.sequenceNr.toString))
         }
       }
@@ -126,33 +130,35 @@ class AndroidJournal extends SyncWriteJournal with ActorLogging {
 
     if (permanent) {
       dbHelper.db.delete(
-        DbHelper.tables.journal,
-        s"${DbHelper.columns.persistenceId} = ? and ${DbHelper.columns.sequenceNumber} <= ?",
+        DbHelper.Tables.journal,
+        s"${DbHelper.Columns.persistenceId} = ? and ${DbHelper.Columns.sequenceNumber} <= ?",
         Array(persistenceId, toSequenceNr.toString))
     } else {
       val content = new ContentValues()
-      content.put(DbHelper.columns.marker, AndroidJournal.DeletedMarker)
+      content.put(DbHelper.Columns.marker, AndroidJournal.DeletedMarker)
       dbHelper.db.update(
-        DbHelper.tables.journal,
+        DbHelper.Tables.journal,
         content,
-        s"${DbHelper.columns.persistenceId} = ? and ${DbHelper.columns.sequenceNumber} <= ? and ${DbHelper.columns.marker} != ?",
+        s"${DbHelper.Columns.persistenceId} = ? and ${DbHelper.Columns.sequenceNumber} <= ? and ${DbHelper.Columns.marker} != ?",
         Array(persistenceId, toSequenceNr.toString, AndroidJournal.DeletedMarker))
     }
   }
 
-  override def asyncReplayMessages(persistenceId: String, fromSequenceNr: Long, toSequenceNr: Long, max: Long)(replayCallback: (PersistentRepr) => Unit): Future[Unit] = {
-    log.debug(s"Replay messages, persistenceId = $persistenceId, fromSequenceNr = $fromSequenceNr, toSequenceNr = $toSequenceNr")
+  override def asyncReplayMessages(persistenceId: String, from: Long, to: Long, max: Long)(replayCallback: (PersistentRepr) => Unit): Future[Unit] = {
+    log.debug(s"Replay messages, persistenceId = $persistenceId, fromSequenceNr = $from, toSequenceNr = $to")
 
     Future {
+      // scalastyle:off null - Android SDK uses null here
       val c = new RichCursor(dbHelper.db.query(
-        DbHelper.tables.journal,
-        Array(DbHelper.columns.marker, DbHelper.columns.message),
-        s"${DbHelper.columns.persistenceId} = ? and ${DbHelper.columns.sequenceNumber} >= ? and ${DbHelper.columns.sequenceNumber} <= ?",
-        Array(persistenceId, fromSequenceNr.toString, toSequenceNr.toString),
+        DbHelper.Tables.journal,
+        Array(DbHelper.Columns.marker, DbHelper.Columns.message),
+        s"${DbHelper.Columns.persistenceId} = ? and ${DbHelper.Columns.sequenceNumber} >= ? and ${DbHelper.Columns.sequenceNumber} <= ?",
+        Array(persistenceId, from.toString, to.toString),
         null,
         null,
-        s"${DbHelper.columns.sequenceNumber} ASC",
+        s"${DbHelper.Columns.sequenceNumber} ASC",
         max.toString))
+      // scalastyle:on null
 
       c.iterator.toStream.map(r => (r.getString(0), r.getBlob(1))).foreach {
         case (marker, bytes) =>
@@ -168,16 +174,18 @@ class AndroidJournal extends SyncWriteJournal with ActorLogging {
     log.debug(s"Read the highest sequence number, persistenceId = $persistenceId, fromSequenceNr = $fromSequenceNr")
 
     Future {
+      // scalastyle:off null - Android SDK uses null here
       val c = new RichCursor(dbHelper.db.query(
-        DbHelper.tables.journal,
-        Array(DbHelper.columns.sequenceNumber),
-        s"${DbHelper.columns.persistenceId} = ?",
+        DbHelper.Tables.journal,
+        Array(DbHelper.Columns.sequenceNumber),
+        s"${DbHelper.Columns.persistenceId} = ?",
         Array(persistenceId),
         null,
         null,
-        s"${DbHelper.columns.sequenceNumber} DESC",
+        s"${DbHelper.Columns.sequenceNumber} DESC",
         1.toString
       ))
+      // scalastyle:on null
 
       c.iterator.toList.map(r => r.getLong(0)).headOption.getOrElse(0L)
     }

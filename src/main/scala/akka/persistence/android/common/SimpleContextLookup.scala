@@ -8,13 +8,12 @@ import android.content.Context
  * reflection, which is dependent on the java.rmi package which isn't available on Android
  */
 class SimpleContextLookup extends ContextLookup {
-  def getContext = SimpleContextLookup.context
+  def getContext: Option[Context] = SimpleContextLookup.context
 
-  def setContext(c: Context) = {
-    if (SimpleContextLookup.context == null) {
-      SimpleContextLookup.context = c
-    } else if (SimpleContextLookup.context != c) {
-      throw new IllegalArgumentException("context cannot be changed once set")
+  def setContext(context: Context): Unit = {
+    SimpleContextLookup.context match {
+      case Some(c) => if (c != context) throw new IllegalArgumentException("context cannot be changed once set")
+      case None => SimpleContextLookup.context = Some(context)
     }
   }
 }
@@ -23,5 +22,5 @@ class SimpleContextLookup extends ContextLookup {
  * companion class acts as singleton to hole the context we're passing around
  */
 private object SimpleContextLookup {
-  var context: Context = null
+  var context: Option[Context] = None
 }
