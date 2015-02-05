@@ -19,7 +19,6 @@ object AkkaPersistenceAndroidBuild extends Build {
   )
 
   val buildSettings = Seq(
-    version := (version in ThisBuild).value,
     organization := "me.leaf",
     scalaVersion := "2.11.5",
     scalacOptions ++= Seq(
