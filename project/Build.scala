@@ -1,17 +1,21 @@
 import com.typesafe.sbt.pgp.PgpKeys
 import sbt._
 import sbt.Keys._
-import sbtrelease.ReleasePlugin._
+import com.typesafe.sbt.SbtScalariform._
+import scalariform.formatter.preferences._
 
 object AkkaPersistenceAndroidBuild extends Build {
 
   lazy val akka_persistence_android = Project (
     "akka-persistence-android",
     file("."),
-    settings = buildSettings ++ releasePluginSettings ++ Seq(
-      resolvers := repos,
-      libraryDependencies ++= dependencies
-    )
+    settings = buildSettings
+      ++ scalariformSettings
+      ++ releasePluginSettings
+      ++ Seq(
+        resolvers := repos,
+        libraryDependencies ++= dependencies
+      )
   )
 
   val buildSettings = Seq(
@@ -30,6 +34,9 @@ object AkkaPersistenceAndroidBuild extends Build {
     parallelExecution in Test := false,
     fork in Test := true,
     credentials += Credentials(Path.userHome / ".ivy2" / ".nexus-credentials"),
+    ScalariformKeys.preferences := ScalariformKeys.preferences.value
+      .setPreference(DoubleIndentClassDeclaration, false)
+      .setPreference(PreserveDanglingCloseParenthesis, false),
     publishTo := {
       val nexus = "https://oss.sonatype.org/"
       if (isSnapshot.value)

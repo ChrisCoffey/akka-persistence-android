@@ -5,10 +5,10 @@ import android.content.Context
 
 class AppContext extends Application {
 
-    override def onCreate(){
-        super.onCreate()
-        AppContext.context = getApplicationContext
-    }
+  override def onCreate() {
+    super.onCreate()
+    AppContext.context = getApplicationContext
+  }
 }
 
 object AppContext {

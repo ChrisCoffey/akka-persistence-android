@@ -5,8 +5,8 @@ import java.sql.SQLException
 import akka.actor.ActorLogging
 import akka.persistence.android.common.DbHelper
 import akka.persistence.journal.SyncWriteJournal
-import akka.persistence.{PersistentConfirmation, PersistentId, PersistentRepr}
-import akka.serialization.{Serialization, SerializationExtension}
+import akka.persistence.{ PersistentConfirmation, PersistentId, PersistentRepr }
+import akka.serialization.{ Serialization, SerializationExtension }
 import android.content.ContentValues
 import org.scaloid.common._
 

@@ -1,7 +1,7 @@
 package akka.persistence.android.common
 
 import akka.actor.ActorSystem
-import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
+import android.database.sqlite.{ SQLiteDatabase, SQLiteOpenHelper }
 import scala.reflect.runtime.universe
 
 class DbHelper(val system: ActorSystem) {
@@ -34,12 +34,12 @@ class DbHelper(val system: ActorSystem) {
 
 object DbHelper {
   final val version = 1
-  
+
   object tables {
     final val journal = "journal"
     final val snapshot = "snapshot"
   }
-  
+
   object columns {
     final val persistenceId = "persistence_id"
     final val sequenceNumber = "sequence_nr"

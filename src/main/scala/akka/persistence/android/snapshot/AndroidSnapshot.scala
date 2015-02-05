@@ -6,7 +6,7 @@ import akka.persistence._
 import akka.persistence.android.common.DbHelper
 import akka.persistence.serialization.Snapshot
 import akka.persistence.snapshot.SnapshotStore
-import akka.serialization.{Serialization, SerializationExtension}
+import akka.serialization.{ Serialization, SerializationExtension }
 import org.scaloid.common.RichCursor
 
 import scala.concurrent.Future
